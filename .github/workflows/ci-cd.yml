@@ -1,11 +1,11 @@
-name: Node.js CI/CD to AWS EC2
+name: Node.js CI/CD to AWS EC2 (Ubuntu)
 
 on:
   push:
-    branches: [ "main" ] # Trigger on pushes to the main branch
+    branches: [ "main" ]
   pull_request:
-    branches: [ "main" ] # Trigger on pull requests to the main branch
-  workflow_dispatch: # Allow manual triggering
+    branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
   ci:
@@ -18,18 +18,19 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '16' # Choose a Node.js version
+        node-version: '16'
 
     - name: Install dependencies
       run: npm install
       working-directory: ./
+
     - name: Run tests (Example)
       run: npm test
-      working-directory: ./ #change to your forked repo
-      continue-on-error: true  #  Don't fail the entire workflow if tests fail (for this example)
+      working-directory: ./
+      continue-on-error: true
 
   cd:
-    needs: ci  # The CD job depends on the CI job succeeding
+    needs: ci
     runs-on: ubuntu-latest
 
     steps:
@@ -42,15 +43,17 @@ jobs:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ secrets.AWS_REGION }}
-        
+
     - name: Deploy to EC2 via SSH
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.HOST_IP }}
-        username: ${{ secrets.USERNAME }}
+        username: ubuntu  #  <-- Changed to 'ubuntu'
         key: ${{ secrets.SSH_KEY }}
         script: |
-          cd /home/ec2-user/nodejs-cicd-aws-ec2
+          cd /home/ubuntu/nodejs-cicd-aws-ec2  # <-- Changed user to ubuntu
+          sudo apt update -y  # <-- Added update command
+          sudo apt install -y nodejs npm pm2  # <-- Added package installation
           git pull origin main
           npm install
-          pm2 restart app.js
+          pm2 restart app.js || pm2 start app.js --name app
