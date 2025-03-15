@@ -51,23 +51,31 @@ jobs:
         username: ubuntu
         key: ${{ secrets.SSH_KEY }}
         script: |
+          # Check if the app directory exists; clone if it doesn't
           if [ ! -d "/home/ubuntu/ci-cd-nodejs-aws-ec2" ]; then
             echo "Cloning repository..."
-            git clone https://github.com/Ejiwumiabdulhamid79/ci-cd-nodejs-aws-ec2.git /home/ubuntu/ci-cd-nodejs-aws-ec2  # <--  YOUR FORKED NODE.JS APP REPO HERE
+            git clone https://github.com/Ejiwumiabdulhamid79/ci-cd-nodejs-aws-ec2.git /home/ubuntu/ci-cd-nodejs-aws-ec2  # <-- Your FORKED app repo
           else
             echo "Repository exists, pulling latest changes..."
           fi
 
-           sudo apt update
-           sudo apt install -y nodejs npm
-           sudo npm install -g pm2  # Install pm2 globally using npm
+          cd /home/ubuntu/ci-cd-nodejs-aws-ec2
 
-           # Verify pm2 installation
-           if ! command -v pm2 &> /dev/null; then
-           echo "pm2 installation failed!"
-           exit 1  # Exit with an error code
-           fi
+          # Update package lists
+          sudo apt update
 
-           git pull origin main
-           npm install
-           pm2 restart app.js || pm2 start app.js --name app
+          # Install Node.js and npm (pm2 will be installed via npm)
+          sudo apt install -y nodejs npm
+
+          # Install pm2 globally using npm
+          sudo npm install -g pm2
+
+          # Verify pm2 installation
+          if ! command -v pm2 &> /dev/null; then
+            echo "pm2 installation failed!"
+            exit 1
+          fi
+
+          git pull origin main
+          npm install
+          pm2 restart app.js || pm2 start app.js --name app
