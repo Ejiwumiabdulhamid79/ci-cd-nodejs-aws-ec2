@@ -48,12 +48,21 @@ jobs:
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.HOST_IP }}
-        username: ubuntu  #  <-- Changed to 'ubuntu'
+        username: ubuntu
         key: ${{ secrets.SSH_KEY }}
         script: |
-          cd /home/ubuntu/ci-cd-nodejs-aws-ec2  # <-- Changed user to ubuntu
-          sudo apt update -y  # <-- Added update command
-          sudo apt install -y nodejs npm pm2  # <-- Added package installation
+          if [ ! -d "/home/ubuntu/ci-cd-nodejs-aws-ec2" ]; then
+            echo "Cloning repository..."
+            git clone https://github.com/Ejiwumiabdulhamid79/ci-cd-nodejs-aws-ec2.git /home/ubuntu/ci-cd-nodejs-aws-ec2  # <--  YOUR FORKED NODE.JS APP REPO HERE
+          else
+            echo "Repository exists, pulling latest changes..."
+          fi
+
+          cd /home/ubuntu/ci-cd-nodejs-aws-ec2
+
+          sudo apt update
+          sudo apt install -y nodejs npm pm2
+
           git pull origin main
           npm install
           pm2 restart app.js || pm2 start app.js --name app
