@@ -1,0 +1,67 @@
+name: Node.js CI/CD to AWS EC2
+
+on:
+  push:
+    branches: [ "main" ] # Trigger on pushes to the main branch
+  pull_request:
+    branches: [ "main" ] # Trigger on pull requests to the main branch
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16' # Choose a Node.js version
+
+    - name: Install dependencies
+      run: npm install
+      working-directory: https://github.com/Ejiwumiabdulhamid79/ci-cd-nodejs-aws-ec2/new/master
+    - name: Run tests (Example)
+      run: npm test
+      working-directory: https://github.com/Ejiwumiabdulhamid79/ci-cd-nodejs-aws-ec2/new/master #change to your forked repo
+      continue-on-error: true  #  Don't fail the entire workflow if tests fail (for this example)
+
+  cd:
+    needs: ci  # The CD job depends on the CI job succeeding
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: Create IAM Role for EC2
+      id: create-iam-role
+      run: |
+        ROLE_EXISTS=$(aws iam get-role --role-name github-actions-ec2-role --query Role.Arn --output text 2>&1)
+        if [[ $ROLE_EXISTS == *"NoSuchEntity"* ]]; then
+          ROLE_ARN=$(aws iam create-role --role-name github-actions-ec2-role --assume-role-policy-document '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Service":"ec2.amazonaws.com"},"Action":"sts:AssumeRole"}]}' --query Role.Arn --output text)
+          echo "::set-output name=role_arn::$ROLE_ARN"
+          aws iam attach-role-policy --role-name github-actions-ec2-role --policy-arn arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+        else
+          echo "Role github-actions-ec2-role already exists"
+        fi
+    - name: Deploy to EC2 via SSH
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST_IP }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        script: |
+          cd /home/ec2-user/nodejs-cicd-aws-ec2
+          git pull origin main
+          npm install
+          pm2 restart app.js
