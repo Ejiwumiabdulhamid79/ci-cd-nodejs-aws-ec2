@@ -54,7 +54,7 @@ jobs:
           # Check if the app directory exists; clone if it doesn't
           if [ ! -d "/home/ubuntu/ci-cd-nodejs-aws-ec2" ]; then
             echo "Cloning repository..."
-            git clone https://github.com/Ejiwumiabdulhamid79/ci-cd-nodejs-aws-ec2.git /home/ubuntu/ci-cd-nodejs-aws-ec2  # <-- Your FORKED app repo
+            git clone https://github.com/Ejiwumiabdulhamid79/ci-cd-nodejs-aws-ec2 /home/ubuntu/ci-cd-nodejs-aws-ec2  # <-- Your FORKED app repo
           else
             echo "Repository exists, pulling latest changes..."
           fi
