@@ -58,11 +58,16 @@ jobs:
             echo "Repository exists, pulling latest changes..."
           fi
 
-          cd /home/ubuntu/ci-cd-nodejs-aws-ec2
+           sudo apt update
+           sudo apt install -y nodejs npm
+           sudo npm install -g pm2  # Install pm2 globally using npm
 
-          sudo apt update
-          sudo apt install -y nodejs npm pm2
+           # Verify pm2 installation
+           if ! command -v pm2 &> /dev/null; then
+           echo "pm2 installation failed!"
+           exit 1  # Exit with an error code
+           fi
 
-          git pull origin main
-          npm install
-          pm2 restart app.js || pm2 start app.js --name app
+           git pull origin main
+           npm install
+           pm2 restart app.js || pm2 start app.js --name app
