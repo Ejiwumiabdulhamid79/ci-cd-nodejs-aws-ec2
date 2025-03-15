@@ -51,7 +51,7 @@ jobs:
         username: ubuntu  #  <-- Changed to 'ubuntu'
         key: ${{ secrets.SSH_KEY }}
         script: |
-          cd /home/ubuntu/nodejs-cicd-aws-ec2  # <-- Changed user to ubuntu
+          cd /home/ubuntu/ci-cd-nodejs-aws-ec2  # <-- Changed user to ubuntu
           sudo apt update -y  # <-- Added update command
           sudo apt install -y nodejs npm pm2  # <-- Added package installation
           git pull origin main
