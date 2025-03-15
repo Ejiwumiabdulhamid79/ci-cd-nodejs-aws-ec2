@@ -22,10 +22,10 @@ jobs:
 
     - name: Install dependencies
       run: npm install
-      working-directory: https://github.com/Ejiwumiabdulhamid79/ci-cd-nodejs-aws-ec2/new/master
+      working-directory: https://github.com/Ejiwumiabdulhamid79/ci-cd-nodejs-aws-ec2/
     - name: Run tests (Example)
       run: npm test
-      working-directory: https://github.com/Ejiwumiabdulhamid79/ci-cd-nodejs-aws-ec2/new/master #change to your forked repo
+      working-directory: https://github.com/Ejiwumiabdulhamid79/ci-cd-nodejs-aws-ec2/ #change to your forked repo
       continue-on-error: true  #  Don't fail the entire workflow if tests fail (for this example)
 
   cd:
