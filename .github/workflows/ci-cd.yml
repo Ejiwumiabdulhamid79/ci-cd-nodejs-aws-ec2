@@ -51,12 +51,37 @@ jobs:
         username: ubuntu
         key: ${{ secrets.SSH_KEY }}
         script: |
-         # --- DEBUGGING ONLY - START ---
-           echo "Current directory: $(pwd)"
-           echo "Listing /home/ubuntu:"
-           ls -la /home/ubuntu
-           echo "Listing /home/ubuntu/ci-cd-nodejs-aws-ec2:" # Use the *expected* directory name
-           ls -la /home/ubuntu/ci-cd-nodejs-aws-ec2
-           echo "Attempting to start server.js directly (will likely fail, but shows path):"
-           node /home/ubuntu/ci-cd-nodejs-aws-ec2/server.js  # Try to run directly (expect failure)
-           # --- DEBUGGING ONLY - END --- 
+          FORKED_REPO_URL="https://github.com/Ejiwumiabdulhamid79/ci-cd-nodejs-aws-ec2"
+          FORKED_REPO_NAME="ci-cd-nodejs-aws-ec2"
+
+           # Construct the directory path on the EC2 instance
+          APP_DIRECTORY="/home/ubuntu/$FORKED_REPO_NAME"
+          
+          # Check if the app directory exists; clone if it doesn't
+           if [ ! -d "$APP_DIRECTORY" ]; then
+            echo "Cloning repository..."
+            git clone "$FORKED_REPO_URL" "$APP_DIRECTORY"
+          else
+            echo "Repository exists, pulling latest changes..."
+          fi
+
+          cd "$APP_DIRECTORY"
+          
+          # Update package lists
+          sudo apt update
+
+          # Install Node.js and npm (pm2 will be installed via npm)
+          sudo apt install -y nodejs npm
+
+          # Install pm2 globally using npm
+          sudo npm install -g pm2
+
+          # Verify pm2 installation
+          if ! command -v pm2 &> /dev/null; then
+            echo "pm2 installation failed!"
+            exit 1
+          fi
+
+          git pull origin master
+          npm install
+          pm2 restart server.js || pm2 start server.js --name app
