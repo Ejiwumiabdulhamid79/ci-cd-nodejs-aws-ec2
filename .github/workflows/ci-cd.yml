@@ -84,4 +84,4 @@ jobs:
 
           git pull origin master
           npm install
-          pm2 restart server.js || pm2 start server.js --name server
+          pm2 restart server.js || pm2 start server.js --name app
