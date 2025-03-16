@@ -51,15 +51,21 @@ jobs:
         username: ubuntu
         key: ${{ secrets.SSH_KEY }}
         script: |
+          FORKED_REPO_URL="https://github.com/Ejiwumiabdulhamid79/ci-cd-nodejs-aws-ec2"
+          FORKED_REPO_NAME="ci-cd-nodejs-aws-ec2"
+
+           # Construct the directory path on the EC2 instance
+          APP_DIRECTORY="/home/ubuntu/$FORKED_REPO_NAME"
+          
           # Check if the app directory exists; clone if it doesn't
-          if [ ! -d "/home/ubuntu/ci-cd-nodejs-aws-ec2" ]; then
+           if [ ! -d "$APP_DIRECTORY" ]; then
             echo "Cloning repository..."
-            git clone https://github.com/Ejiwumiabdulhamid79/ci-cd-nodejs-aws-ec2 /home/ubuntu/ci-cd-nodejs-aws-ec2  # <-- Your FORKED app repo
+            git clone "$FORKED_REPO_URL" "$APP_DIRECTORY"
           else
             echo "Repository exists, pulling latest changes..."
           fi
 
-          cd /home/ubuntu/ci-cd-nodejs-aws-ec2
+          cd "$APP_DIRECTORY"
 
           # Update package lists
           sudo apt update
